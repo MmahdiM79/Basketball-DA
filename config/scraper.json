@@ -1,0 +1,17 @@
+{
+  "start_season": 2020,
+  "end_season": 2026,
+  "datasets": [
+    "players",
+    "player_seasons",
+    "mvp_votes",
+    "champions",
+    "team_rosters"
+  ],
+  "output_dir": "data/processed",
+  "cache_dir": "data/raw",
+  "delay": 4.0,
+  "timeout": 30.0,
+  "max_attempts": 3,
+  "reuse_cache": true
+}
