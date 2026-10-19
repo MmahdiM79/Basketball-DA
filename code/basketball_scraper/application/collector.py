@@ -28,7 +28,7 @@ class BasketballCollector:
         self._validator = validator
 
     def _parse(self, name: str, url: str, context: ParseContext) -> ParsedData:
-        return self._parsers[name].parse(self._source.get(url), context)
+        return self._parsers[name].parse_url(self._source, url, context)
 
     def run(self, settings: Settings) -> dict[str, int]:
         selected = set(settings.datasets)

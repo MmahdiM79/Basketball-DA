@@ -44,7 +44,7 @@ def load_settings(argv: list[str] | None = None) -> Settings:
         help="Datasets to export (default: all)",
     )
     parser.add_argument("--output-dir", type=Path, help="CSV output directory")
-    parser.add_argument("--cache-dir", type=Path, help="HTML cache directory")
+    parser.add_argument("--cache-dir", type=Path, help="Parsed data cache directory")
     parser.add_argument(
         "--delay", type=float, help="Minimum seconds between requests (default: 4)"
     )
@@ -60,7 +60,7 @@ def load_settings(argv: list[str] | None = None) -> Settings:
         "--reuse-cache",
         action=argparse.BooleanOptionalAction,
         default=None,
-        help="Reuse successful cached pages (default: enabled)",
+        help="Reuse extracted data without fetching pages (default: enabled)",
     )
     args = vars(parser.parse_args(argv))
     explicit_config = args.pop("config")

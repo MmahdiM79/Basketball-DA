@@ -1,11 +1,6 @@
-import hashlib
-import json
-import os
-import tempfile
 import time
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
-from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
@@ -14,20 +9,16 @@ from basketball_scraper.domain.contracts import PageSource
 from basketball_scraper.domain.models import FetchError, Page
 
 
-class CachedHttpSource(PageSource):
+class HttpSource(PageSource):
     def __init__(
         self,
-        cache_dir: Path,
         delay: float,
         timeout: float,
         max_attempts: int,
-        reuse_cache: bool,
     ):
-        self._cache_dir = cache_dir
         self._delay = delay
         self._timeout = timeout
         self._max_attempts = max_attempts
-        self._reuse_cache = reuse_cache
         self._session = requests.Session()
         self._session.headers["User-Agent"] = (
             "Basketball-DA/0.1 (educational NBA data collection)"
@@ -44,21 +35,6 @@ class CachedHttpSource(PageSource):
         parsed = urlparse(url)
         if parsed.scheme != "https" or parsed.netloc != "www.basketball-reference.com":
             raise FetchError(f"Unsupported source URL: {url}")
-        cache_path = (
-            self._cache_dir / f"{hashlib.sha256(url.encode()).hexdigest()}.json"
-        )
-        if self._reuse_cache and cache_path.exists():
-            try:
-                cached = json.loads(cache_path.read_text(encoding="utf-8"))
-                if (
-                    cached["url"] == url
-                    and isinstance(cached["html"], str)
-                    and "<html" in cached["html"].lower()
-                ):
-                    datetime.fromisoformat(cached["fetched_at"])
-                    return Page(**cached)
-            except ValueError, KeyError, TypeError:
-                print(f"Ignoring invalid cache entry: {cache_path}")
         for attempt in range(1, self._max_attempts + 1):
             if self._last_request is not None:
                 time.sleep(
@@ -113,7 +89,6 @@ class CachedHttpSource(PageSource):
             ):
                 raise FetchError(f"Received a challenge page from {url}")
             page = Page(url, datetime.now(UTC).isoformat(), html)
-            self._save(cache_path, page)
             return page
         raise FetchError(f"Could not fetch {url}")
 
@@ -132,21 +107,3 @@ class CachedHttpSource(PageSource):
                 return max(0, (date - datetime.now(UTC)).total_seconds())
             except ValueError, TypeError, OverflowError:
                 return 0
-
-    @staticmethod
-    def _save(path: Path, page: Page) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        temp_path = None
-        try:
-            with tempfile.NamedTemporaryFile(
-                mode="w", encoding="utf-8", dir=path.parent, delete=False
-            ) as stream:
-                temp_path = Path(stream.name)
-                json.dump(
-                    {"url": page.url, "fetched_at": page.fetched_at, "html": page.html},
-                    stream,
-                )
-            os.replace(temp_path, path)
-        finally:
-            if temp_path is not None:
-                temp_path.unlink(missing_ok=True)

@@ -19,7 +19,7 @@ from basketball_scraper.domain.models import (
     ValidationError,
 )
 from basketball_scraper.infrastructure.csv_writer import CsvDatasetWriter
-from basketball_scraper.infrastructure.http import CachedHttpSource
+from basketball_scraper.infrastructure.http import HttpSource
 from basketball_scraper.infrastructure.parsed_cache import CachedParser
 from basketball_scraper.parsers.entities import (
     ChampionsParser,
@@ -224,7 +224,7 @@ class Checks(unittest.TestCase):
         self.addCleanup(printer.stop)
 
     def source(self, pages):
-        source = CachedHttpSource(self.root / "raw", 0.001, 1, 3, True)
+        source = HttpSource(0.001, 1, 3)
         source._session.get = Mock(
             side_effect=lambda url, **kwargs: response(content=pages[url])
         )
@@ -293,12 +293,16 @@ class Checks(unittest.TestCase):
         settings = replace(
             Settings(), output_dir=self.root / "processed", cache_dir=self.root / "raw"
         )
+        parsers = {
+            name: CachedParser(parser, settings.cache_dir, True)
+            for name, parser in PARSERS.items()
+        }
         with (
             self.source(pages) as source,
             patch("basketball_scraper.infrastructure.http.time.sleep"),
         ):
             counts = BasketballCollector(
-                source, PARSERS, CsvDatasetWriter(), DatasetValidator()
+                source, parsers, CsvDatasetWriter(), DatasetValidator()
             ).run(settings)
             self.assertEqual(
                 counts,
@@ -310,10 +314,10 @@ class Checks(unittest.TestCase):
                     "team_rosters": 21,
                 },
             )
-            self.assertEqual(source._session.get.call_count, len(pages))
+            self.assertEqual(source._session.get.call_count, len(pages) + 6)
         with self.source({}) as source:
             again = BasketballCollector(
-                source, PARSERS, CsvDatasetWriter(), DatasetValidator()
+                source, parsers, CsvDatasetWriter(), DatasetValidator()
             ).run(settings)
             self.assertEqual(again, counts)
             source._session.get.assert_not_called()
@@ -324,7 +328,7 @@ class Checks(unittest.TestCase):
 
         self.assertEqual(rows("players")[0]["height_cm"], "198.12")
         self.assertEqual(rows("players")[0]["nationality"], "")
-        self.assertEqual(rows("players")[0]["birth_country"], "United States")
+        self.assertEqual(rows("players")[0]["birth_country"], "US")
         self.assertEqual(rows("player_seasons")[0]["is_total"], "True")
         self.assertEqual(rows("player_seasons")[0]["team_id"], "")
         self.assertEqual(rows("player_seasons")[0]["per"], "22.5")
@@ -336,6 +340,24 @@ class Checks(unittest.TestCase):
         self.assertEqual(rows("mvp_votes")[1]["rank"], "2")
         for file in settings.output_dir.glob("*.csv"):
             self.assertTrue(file.read_bytes().startswith(b"\xef\xbb\xbf"))
+
+    def test_profile_without_itemprop_and_state_birthplace_link(self):
+        page = Page(
+            f"{BASE_URL}/players/a/arizatr01.html",
+            "2026-10-19",
+            html(
+                '<div id="meta"><h1>Trevor Ariza</h1>'
+                "<p><span>6-8</span>, <span>215lb</span> (203cm, 97kg)</p>"
+                '<p><strong>Born:</strong><span id="necro-birth" data-birth="1985-06-30"></span>'
+                '<span>in Miami, <a href="/friv/birthplaces.fcgi?country=US&amp;state=FL">Florida</a></span></p></div>'
+            ),
+        )
+        row = PlayerProfileParser().parse(page, ParseContext()).rows[0]
+        self.assertEqual(row["birth_date"], "1985-06-30")
+        self.assertEqual(row["height_cm"], 203.2)
+        self.assertEqual(row["weight_kg"], 97.52)
+        self.assertEqual(row["birth_country"], "US")
+        self.assertIsNone(row["nationality"])
 
     def test_modern_column_aliases_and_missing_table(self):
         url = f"{BASE_URL}/leagues/NBA_2024_per_game.html"
@@ -376,7 +398,6 @@ class Checks(unittest.TestCase):
             ).run(settings)
         before = {p.name: p.read_bytes() for p in settings.output_dir.iterdir()}
         with self.source({}) as source:
-            source._reuse_cache = False
             source._session.get = Mock(return_value=response(403))
             with self.assertRaises(FetchError):
                 BasketballCollector(
@@ -407,7 +428,6 @@ class Checks(unittest.TestCase):
             self.source({}) as source,
             patch("basketball_scraper.infrastructure.http.time.sleep"),
         ):
-            source._reuse_cache = False
             source._session.get = Mock(side_effect=requests.Timeout("timeout"))
             with self.assertRaises(FetchError):
                 source.get(url)
@@ -504,37 +524,42 @@ class Checks(unittest.TestCase):
         parser = MvpVotesParser()
         cache = CachedParser(parser, self.root / "raw", True)
         url = f"{BASE_URL}/awards/awards_2024.html"
-        page = Page(url, "2026-10-18T00:00:00+00:00", fixture_pages([2024])[url])
+        source = Mock()
+        source.get.return_value = Page(
+            url, "2026-10-18T00:00:00+00:00", fixture_pages([2024])[url]
+        )
         with patch.object(parser, "parse", wraps=parser.parse) as parse:
-            first = cache.parse(page, ParseContext(2024))
+            first = cache.parse_url(source, url, ParseContext(2024))
             first.rows[0]["rank"] = 999
-            second = cache.parse(page, ParseContext(2024))
+            second = cache.parse_url(source, url, ParseContext(2024))
             self.assertEqual(second.rows[0]["rank"], 1)
             self.assertEqual(parse.call_count, 1)
-            cache.parse(replace(page, html=page.html + " "), ParseContext(2024))
-            cache.parse(page, ParseContext(2025))
-            cache.parse(
-                replace(page, fetched_at="2026-10-19T00:00:00+00:00"),
-                ParseContext(2024),
-            )
+            self.assertEqual(source.get.call_count, 1)
+            cache.parse_url(source, url, ParseContext(2025))
             cache._code_hash = "changed-parser-code"
-            cache.parse(page, ParseContext(2024))
-            self.assertEqual(parse.call_count, 5)
+            cache.parse_url(source, url, ParseContext(2024))
+            self.assertEqual(parse.call_count, 3)
+            self.assertEqual(source.get.call_count, 3)
+            self.assertEqual(len(list((self.root / "raw" / "parsed").glob("*.json"))), 2)
 
     def test_disabled_and_corrupted_parsed_cache(self):
         parser = MvpVotesParser()
         url = f"{BASE_URL}/awards/awards_2024.html"
-        page = Page(url, "2026-10-18T00:00:00+00:00", fixture_pages([2024])[url])
+        source = Mock()
+        source.get.return_value = Page(
+            url, "2026-10-18T00:00:00+00:00", fixture_pages([2024])[url]
+        )
         cache = CachedParser(parser, self.root / "raw", False)
         with patch.object(parser, "parse", wraps=parser.parse) as parse:
-            cache.parse(page, ParseContext(2024))
-            cache.parse(page, ParseContext(2024))
+            cache.parse_url(source, url, ParseContext(2024))
+            cache.parse_url(source, url, ParseContext(2024))
             self.assertEqual(parse.call_count, 2)
             stored = next((self.root / "raw" / "parsed").glob("*.json"))
             stored.write_text("{broken")
             cache._reuse_cache = True
-            cache.parse(page, ParseContext(2024))
+            cache.parse_url(source, url, ParseContext(2024))
             self.assertEqual(parse.call_count, 3)
+            self.assertEqual(source.get.call_count, 3)
 
     def test_full_collection_skips_previously_parsed_pages(self):
         pages = fixture_pages(range(2020, 2027))
@@ -552,6 +577,7 @@ class Checks(unittest.TestCase):
             expected = BasketballCollector(
                 source, parsers, CsvDatasetWriter(), DatasetValidator()
             ).run(settings)
+        self.assertEqual(list(settings.cache_dir.glob("*.json")), [])
         from contextlib import ExitStack
 
         with ExitStack() as patches, self.source({}) as source:

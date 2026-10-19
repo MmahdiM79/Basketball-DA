@@ -1,6 +1,6 @@
 import re
 from datetime import date
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from basketball_scraper.domain.contracts import HtmlParser
 from basketball_scraper.domain.models import Page, ParseContext, ParsedData, ParseError
@@ -139,19 +139,36 @@ class PlayerProfileParser(HtmlParser):
             item = info.find(attrs={"itemprop": name})
             return item.get_text(" ", strip=True) if item else None
 
+        height = item_value("height")
+        weight = item_value("weight")
+        if not height or not weight:
+            for paragraph in info.find_all("p"):
+                measurements = re.search(
+                    r"(\d+[-′']\s*\d+)[″\"]?\s*,?\s*(\d+(?:\.\d+)?\s*lbs?)\b",
+                    paragraph.get_text(" ", strip=True),
+                )
+                if measurements:
+                    height = height or measurements[1]
+                    weight = weight or measurements[2]
+                    break
         country = info.find(attrs={"itemprop": "birthPlace"})
+        if country is None and birth is not None:
+            country = birth.find_parent("p")
         country_link = (
             country.find("a", href=re.compile(r"country=")) if country else None
+        )
+        country_code = (
+            parse_qs(urlparse(country_link["href"]).query).get("country", [None])[0]
+            if country_link
+            else None
         )
         row = {
             "player_id": match[1],
             "name": heading.get_text(" ", strip=True),
             "birth_date": birthday,
-            "height_cm": height_cm(item_value("height")),
-            "weight_kg": weight_kg(item_value("weight")),
-            "birth_country": country_link.get_text(" ", strip=True)
-            if country_link
-            else None,
+            "height_cm": height_cm(height),
+            "weight_kg": weight_kg(weight),
+            "birth_country": country_code.upper() if country_code else None,
             "nationality": item_value("nationality"),
             "measurement_scope": "profile_snapshot",
             **provenance(page),

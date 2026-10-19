@@ -6,7 +6,7 @@ from basketball_scraper.application.config import load_settings
 from basketball_scraper.application.validation import DatasetValidator
 from basketball_scraper.domain.models import ScraperError
 from basketball_scraper.infrastructure.csv_writer import CsvDatasetWriter
-from basketball_scraper.infrastructure.http import CachedHttpSource
+from basketball_scraper.infrastructure.http import HttpSource
 from basketball_scraper.infrastructure.parsed_cache import CachedParser
 from basketball_scraper.parsers.entities import (
     ChampionsParser,
@@ -32,12 +32,10 @@ def main(argv: list[str] | None = None) -> int:
             name: CachedParser(parser, settings.cache_dir, settings.reuse_cache)
             for name, parser in parsers.items()
         }
-        with CachedHttpSource(
-            settings.cache_dir,
+        with HttpSource(
             settings.delay,
             settings.timeout,
             settings.max_attempts,
-            settings.reuse_cache,
         ) as source:
             collector = BasketballCollector(
                 source, parsers, CsvDatasetWriter(), DatasetValidator()

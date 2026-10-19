@@ -11,6 +11,11 @@ class PageSource(ABC):
 
 
 class HtmlParser(ABC):
+    def parse_url(
+        self, source: PageSource, url: str, context: ParseContext
+    ) -> ParsedData:
+        return self.parse(source.get(url), context)
+
     @abstractmethod
     def parse(self, page: Page, context: ParseContext) -> ParsedData:
         raise NotImplementedError
