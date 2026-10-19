@@ -1,0 +1,32 @@
+name: Code
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check lint with Ruff
+        uses: astral-sh/ruff-action@v4.1.0
+        with:
+          version-file: uv.lock
+          src: code
+          args: check --output-format=github
+      - name: Check formatting
+        run: ruff format --check code

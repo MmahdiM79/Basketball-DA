@@ -1,6 +1,7 @@
 import sys
 
 import requests
+
 from basketball_scraper.application.collector import BasketballCollector
 from basketball_scraper.application.config import load_settings
 from basketball_scraper.application.validation import DatasetValidator

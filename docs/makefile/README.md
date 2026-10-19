@@ -11,13 +11,17 @@ Every Make target is phony, so a file with the same name does not prevent execut
 | `make scrape` | Collect data using the selected configuration and existing caches |
 | `make scrape-refresh` | Fetch and parse again without reusing caches |
 | `make scrape-help` | Show all scraper options |
-| `make test` | Run the existing test suite |
+| `make test` | Run the offline test suite |
+| `make lint` | Check Python code with the locked Ruff version |
+| `make format-check` | Check Ruff formatting without editing files |
+| `make format` | Apply Ruff formatting locally |
+| `make smoke` | Fetch and check six live pages without writing CSVs or cache |
 
 | Make variable | Default | Meaning |
 | --- | --- | --- |
 | `UV` | `uv` | Executable path used by all targets that invoke `uv` |
-| `CONFIG` | `config/scraper.json` | Configuration path for `scrape` and `scrape-refresh` |
-| `ARGS` | Empty | Additional scraper CLI arguments for `scrape` and `scrape-refresh` |
+| `CONFIG` | `config/scraper.json`; `config/smoke.json` for `smoke` | Configuration path for `scrape`, `scrape-refresh`, and `smoke` |
+| `ARGS` | Empty | Additional CLI arguments for `scrape`, `scrape-refresh`, and `smoke` |
 
 Use the existing CLI options through `ARGS`; Make does not define separate season or dataset settings:
 
@@ -41,3 +45,17 @@ make setup UV="/path/to/uv"
 `CONFIG` supplies `--config`; use it to select the configuration file. Values in `ARGS` override settings from that file through the existing CLI. `scrape-refresh` appends `--no-reuse-cache` after `ARGS`, so even an earlier `--reuse-cache` cannot disable refresh. A failing command causes Make to fail. These targets use the locked dependencies and do not change scraper behavior or the lockfile.
 
 See the [scraper documentation](../scraper/README.md#configuration-and-commands) for the underlying CLI options and configuration behavior.
+
+## Code checks and live smoke check
+
+```bash
+make lint
+make format-check
+make format
+make test
+make smoke
+make smoke ARGS="--start-season 2023 --end-season 2023 --delay 5"
+make smoke CONFIG="config/custom smoke.json"
+```
+
+`make format` edits Python files; `make lint` and `make format-check` only report issues. `make smoke` requires one season and all five datasets, fetches fresh pages regardless of cache settings, and does not write CSVs or cache. See the [CI guide](../ci/README.md) for page selection, validation, triggers, and failure behavior.

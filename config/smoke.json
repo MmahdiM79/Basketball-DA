@@ -1,0 +1,15 @@
+{
+  "start_season": 2024,
+  "end_season": 2024,
+  "datasets": [
+    "players",
+    "player_seasons",
+    "mvp_votes",
+    "champions",
+    "team_rosters"
+  ],
+  "delay": 4.0,
+  "timeout": 30.0,
+  "max_attempts": 3,
+  "reuse_cache": false
+}

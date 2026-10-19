@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import requests
+
 from basketball_scraper.application.collector import BASE_URL, BasketballCollector
 from basketball_scraper.application.config import PROJECT_ROOT, Settings, load_settings
 from basketball_scraper.application.validation import DatasetValidator
@@ -540,7 +541,9 @@ class Checks(unittest.TestCase):
             cache.parse_url(source, url, ParseContext(2024))
             self.assertEqual(parse.call_count, 3)
             self.assertEqual(source.get.call_count, 3)
-            self.assertEqual(len(list((self.root / "raw" / "parsed").glob("*.json"))), 2)
+            self.assertEqual(
+                len(list((self.root / "raw" / "parsed").glob("*.json"))), 2
+            )
 
     def test_disabled_and_corrupted_parsed_cache(self):
         parser = MvpVotesParser()

@@ -151,3 +151,7 @@ Requests run sequentially. Temporary network failures and HTTP `429/500/502/503/
 All selected datasets must be collected and validated before CSV files are replaced; failed runs preserve previous exports. Unselected files remain unchanged, so keep their season ranges consistent or use separate output directories. Run only one collector per output directory at a time. Required directories are created automatically.
 
 Tests use controlled HTML and simulated network responses. A successful live collection on October 19, 2026 covered seasons ending in 2020–2026 and produced all five CSVs: 1,173 players, 5,050 player-season rows, 81 MVP voting rows, 7 champions, and 4,519 roster rows. The [run manifest](../../data/processed/last_run.json) records the export time and row counts. Schema, uniqueness, season coverage, cross-file relationships, and source metadata were checked; a subsequent run reused the cache without network requests. Nationality remains blank because the source profiles did not state it explicitly.
+
+## Limited live check
+
+Use `make smoke` to check one season through six live pages without collecting every team/player or writing CSVs and cache. This runs separately from the full collector using the same HTTP client and parsers. See the [CI guide](../ci/README.md) for the sample selection, configuration, and automatic checks.
