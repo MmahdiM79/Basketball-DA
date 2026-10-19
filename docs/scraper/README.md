@@ -98,16 +98,20 @@ CSV files use `UTF-8 BOM`. Shooting percentages and vote shares are fractions; `
 
 ## Configuration and commands
 
-Run commands from the repository root. See the [main setup guide](../../README.md#setup) for Python and `uv` installation.
+Run commands from the repository root with GNU Make 3.81 or later and `uv` installed. See the [main setup guide](../../README.md#setup) for prerequisites and the [Makefile guide](../makefile/README.md) for the complete command reference and executable-path overrides.
 
-```bash
-uv sync --locked
-uv run python code/main.py --config config/scraper.json
-```
+| Command | Purpose |
+| --- | --- |
+| `make` or `make help` | List project commands and variables |
+| `make setup` | Create the environment and install locked dependencies; use after cloning or pulling changes |
+| `make scrape` | Collect selected datasets using the JSON configuration and existing caches |
+| `make scrape-refresh` | Fetch and parse again without reusing either cache |
+| `make scrape-help` | Show all available scraper options |
+| `make test` | Run the scraper's existing automated tests |
 
-The [configuration file](../../config/scraper.json) controls seasons, datasets, output/cache paths, request delay, timeout, attempts, and cache reuse. Every option also accepts a CLI override. Precedence is **CLI > configuration file > built-in defaults**. Without `--config`, the default file is loaded if present; an explicitly requested missing file is an error. All relative paths resolve from the repository root.
+The [configuration file](../../config/scraper.json) controls seasons, datasets, output/cache paths, request delay, timeout, attempts, and cache reuse. Select a file with `CONFIG`; pass option overrides through `ARGS`. Precedence is **options in ARGS > selected JSON file > built-in defaults**. Make defaults to `CONFIG=config/scraper.json`; the selected file must exist. All relative paths resolve from the repository root.
 
-| JSON key | CLI option | Default |
+| JSON key | Option inside `ARGS` | Default |
 | --- | --- | --- |
 | `start_season` / `end_season` | `--start-season` / `--end-season` | `2020` / `2026`, inclusive |
 | `datasets` | `--datasets` | All five datasets; use filenames without `.csv` |
@@ -116,23 +120,30 @@ The [configuration file](../../config/scraper.json) controls seasons, datasets, 
 | `max_attempts` | `--max-attempts` | 3 attempts, including the first |
 | `reuse_cache` | `--reuse-cache` / `--no-reuse-cache` | `true` |
 
-Collect selected datasets for one season with a different request delay:
+Season ending years currently range from 1947 to 2026, although early historical NBA coverage may be incomplete. Delays and timeouts must be finite positive numbers, and `max_attempts` must be at least one.
+
+Set up and collect one season, or select datasets and a different request delay:
 
 ```bash
-uv run python code/main.py --start-season 2024 --end-season 2024 --datasets mvp_votes champions --delay 5
+make setup
+make scrape ARGS="--start-season 2024 --end-season 2024"
+make scrape ARGS="--datasets mvp_votes champions --delay 5"
+make scrape CONFIG="config/custom file.json"
 ```
 
-Force fetching and parsing again, list available options, or run tests:
+Refresh a season, inspect options, or run tests:
 
 ```bash
-uv run python code/main.py --no-reuse-cache
-uv run python code/main.py --help
-uv run --directory code python -m unittest discover -s tests -v
+make scrape-refresh ARGS="--start-season 2024 --end-season 2024"
+make scrape-help
+make test
 ```
+
+`make scrape-refresh` forces cache bypass even if `ARGS` includes `--reuse-cache`. For paths containing spaces inside `ARGS`, preserve their shell quotes as shown in the [Makefile guide](../makefile/README.md).
 
 ## Caching, resuming, and failures
 
-Successful HTML is stored in `data/raw/`; parsing results are stored in `data/raw/parsed/`. After an interruption or failure, rerun the same command to reuse completed work. Changes to cached HTML, fetch time, season/team context, or parser code invalidate the corresponding parsing result. Caches have no automatic expiry and do not automatically check for website changes; use `--no-reuse-cache` to refresh them.
+Successful HTML is stored in `data/raw/`; parsing results are stored in `data/raw/parsed/`. After an interruption or failure, rerun the same command to reuse completed work. Changes to cached HTML, fetch time, season/team context, or parser code invalidate the corresponding parsing result. Caches have no automatic expiry and do not automatically check for website changes; use `make scrape-refresh` to refresh them.
 
 Requests run sequentially. Temporary network failures and HTTP `429/500/502/503/504` responses receive retries with increasing delays, respecting `Retry-After`. HTTP `403`, missing required tables/columns, or validation failures stop collection.
 
