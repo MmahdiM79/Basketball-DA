@@ -6,28 +6,28 @@ ARGS ?=
 
 help:
 	@printf '%s\n' \
-	'Commands:' \
-	'  make help            Show this guide (default)' \
-	'  make setup           Create the environment and install locked dependencies' \
-	'  make scrape          Collect data using the selected configuration' \
-	'  make scrape-refresh  Fetch and parse again without reusing caches' \
-	'  make scrape-help     Show all scraper CLI options' \
-	'  make test            Run the existing test suite' \
-	'  make lint            Check Python code with Ruff' \
-	'  make format-check    Check Python formatting' \
-	'  make format          Format Python code with Ruff' \
-	'  make smoke           Check six live scraper pages without writing data' \
-	'  make clean-data      Clean the database tables into CSV files' \
-	'' \
-	'Variables:' \
-	'  UV      uv executable path (default: uv)' \
-	'  CONFIG  Configuration path (default: config/scraper.json)' \
-	'  ARGS    Extra CLI options for scrape, scrape-refresh, and smoke' \
-	'' \
-	'Examples:' \
-	'  make scrape ARGS="--start-season 2024 --end-season 2024"' \
-	'  make scrape ARGS="--datasets mvp_votes champions --delay 5"' \
-	'  make scrape CONFIG="config/custom file.json"'
+		'Commands:' \
+		'  make help            Show this guide (default)' \
+		'  make setup           Create the environment and install locked dependencies' \
+		'  make scrape          Collect data using the selected configuration' \
+		'  make scrape-refresh  Fetch and parse again without reusing caches' \
+		'  make scrape-help     Show all scraper CLI options' \
+		'  make test            Run the existing test suite' \
+		'  make lint            Check Python code with Ruff' \
+		'  make format-check    Check Python formatting' \
+		'  make format          Format Python code with Ruff' \
+		'  make smoke           Check six live scraper pages without writing data' \
+		'  make clean-data      Clean the database tables into CSV files' \
+		'' \
+		'Variables:' \
+		'  UV      uv executable path (default: uv)' \
+		'  CONFIG  Configuration path (default: config/scraper.json)' \
+		'  ARGS    Extra CLI options for scrape, scrape-refresh, and smoke' \
+		'' \
+		'Examples:' \
+		'  make scrape ARGS="--start-season 2024 --end-season 2024"' \
+		'  make scrape ARGS="--datasets mvp_votes champions --delay 5"' \
+		'  make scrape CONFIG="config/custom file.json"'
 
 setup:
 	"$(UV)" sync --locked
