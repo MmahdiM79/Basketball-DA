@@ -28,9 +28,11 @@ Only for `Players`:
 ## How to run
 From the project root:
 
-    make clean-data
+```bash
+make clean-data
+```
 
 This runs `uv run --with pandas python code/scripts/cleaning/cleaning_data.py`. The `--with pandas` option installs pandas for this run only, so the project dependencies stay unchanged.
 
 ## Output
-One file per table, saved next to the script in `code/scripts/cleaning/`, named `<table>_clean.csv`.
+One file per table, saved in `data/cleaned/`, named `<table>_clean.csv`.
