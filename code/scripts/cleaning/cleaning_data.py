@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
-DB_PATH = HERE.parent / "DB" / "basketbal_da.db"
+DB_PATH = HERE.parents[2] / "DB" / "basketbal_da.db"
 
 
 def clean_common(df: pd.DataFrame) -> pd.DataFrame:
