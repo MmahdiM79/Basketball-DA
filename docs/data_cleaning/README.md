@@ -22,8 +22,9 @@ Only for `Players`:
 
 ## Known notes
 - `player_season` has "total" rows (`is_total = 1`, teams `2TM`, `3TM`, `4TM`) for players who played for several teams in one season. These rows are kept; filter on `is_total` when needed.
-- `team_id` in the `exprience` table does not match `team_id` in `player_season`, so it should not be used. `exprience` can also have several rows per player and season (for players who changed teams), all with the same `experience_years`. Deduplicate on `player_id` and `season_id` before joining.
-- Table names `exprience` and `positons` keep their original spelling from the database.
+- `experience.team_id` and `player_season.team_id` now reference the same `team` IDs. Join team-specific experience on `player_id`, `season_id`, and `team_id`; players who changed teams can have several rows per season.
+- The current database uses the table names `experience` and `positions`. Previously exported files named `exprience_clean.csv` and `positons_clean.csv` retain their old names until regenerated.
+- `champions` stores one champion team per season, with foreign keys to `seasons` and `team`. The hypothesis notebook reads the database directly using a read-only connection.
 
 ## How to run
 From the project root:
