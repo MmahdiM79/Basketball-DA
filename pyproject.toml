@@ -21,7 +21,8 @@ dev = [
 
 [tool.ruff]
 target-version = "py314"
-src = ["code"]
+src = ["code", " notebooks"]
+extend-exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]
