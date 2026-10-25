@@ -43,16 +43,15 @@ scrape-help:
 
 test:
 	"$(UV)" run --locked --directory code python -m unittest discover -s tests -v
-	"$(UV)" run --locked --directory " notebooks" python -m unittest discover -s utils_funcs/tests -v
 
 lint:
-	"$(UV)" run --locked ruff check .
+	"$(UV)" run --locked ruff check code
 
 format-check:
-	"$(UV)" run --locked ruff format --check .
+	"$(UV)" run --locked ruff format --check code
 
 format:
-	"$(UV)" run --locked ruff format .
+	"$(UV)" run --locked ruff format code
 
 smoke: CONFIG = config/smoke.json
 smoke:

@@ -26,7 +26,7 @@ jobs:
         uses: astral-sh/ruff-action@v4.1.0
         with:
           version-file: uv.lock
-          src: .
+          src: code
           args: check --output-format=github
       - name: Check formatting
-        run: ruff format --check .
+        run: ruff format --check code

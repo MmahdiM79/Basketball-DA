@@ -11,7 +11,7 @@ Every Make target is phony, so a file with the same name does not prevent execut
 | `make scrape` | Collect data using the selected configuration and existing caches |
 | `make scrape-refresh` | Fetch and parse again without reusing caches |
 | `make scrape-help` | Show all scraper options |
-| `make test` | Run offline scraper and analysis utility tests |
+| `make test` | Run the offline test suite |
 | `make lint` | Check Python code with the locked Ruff version |
 | `make format-check` | Check Ruff formatting without editing files |
 | `make format` | Apply Ruff formatting locally |

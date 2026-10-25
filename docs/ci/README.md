@@ -5,7 +5,7 @@ Three independent workflows—[lint](../../.github/workflows/lint.yml), [tests](
 | Job | What it checks | Local command |
 | --- | --- | --- |
 | Lint and formatting | Ruff rules `E4`, `E7`, `E9`, `F`, and `I`, plus standard Ruff formatting | `make lint` and `make format-check` |
-| Unit tests | Offline scraper tests and direct analysis utility tests using small in-memory datasets | `make test` |
+| Unit tests | The offline unittest suite, including simulated HTTP failures and smoke checks | `make test` |
 | Live scraper smoke check | Fresh responses and extraction with all six production parsers | `make smoke` |
 
 Jobs run on Ubuntu with a ten-minute timeout and read-only repository permissions. Within each workflow, a new run cancels an older run for the same pull request or branch; the other workflows continue independently. Test and smoke jobs use Python 3.14 and install the locked dependencies with the official `setup-uv` action. The lint job uses the official `ruff-action`, reading the Ruff version from `uv.lock`. CI reports failures without formatting, committing, or pushing code.
