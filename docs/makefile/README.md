@@ -16,6 +16,7 @@ Every Make target is phony, so a file with the same name does not prevent execut
 | `make format-check` | Check Ruff formatting without editing files |
 | `make format` | Apply Ruff formatting locally |
 | `make smoke` | Fetch and check six live pages without writing CSVs or cache |
+| `make import-db` | Build the SQLite database and load the CSV files from `data/database/` |
 
 | Make variable | Default | Meaning |
 | --- | --- | --- |
@@ -59,3 +60,11 @@ make smoke CONFIG="config/custom smoke.json"
 ```
 
 `make format` edits Python files; `make lint` and `make format-check` only report issues. `make smoke` requires one season and all five datasets, fetches fresh pages regardless of cache settings, and does not write CSVs or cache. See the [CI guide](../ci/README.md) for page selection, validation, triggers, and failure behavior.
+
+## Database import
+
+```bash
+make import-db
+```
+
+`make import-db` creates `DB/basketbal_da.db` and fills it from the CSV files in `data/database/`. Like `make clean-data`, it installs pandas and SQLAlchemy for this run only with `uv run --with`, so the project dependencies and the lockfile stay unchanged. The import appends rows: delete the existing database file first, or it fails with `UNIQUE constraint failed`. See the [database guide](../database/README.md) for the tables and relationships.

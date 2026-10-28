@@ -20,3 +20,4 @@ Follow the [Makefile guide](docs/makefile/README.md) to set up the environment, 
 - [Makefile guide](docs/makefile/README.md): project commands, variables, and examples.
 - [Scraper guide](docs/scraper/README.md): execution flow, class relationships, datasets, configuration, caching, and verification limits.
 - [CI guide](docs/ci/README.md): automated lint, tests, and limited live scraping checks.
+- [Database guide](docs/database/README.md): SQLite schema, table relationships, CSV import, and the `make import-db` command.

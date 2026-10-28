@@ -2,7 +2,7 @@ UV ?= uv
 CONFIG ?= config/scraper.json
 ARGS ?=
 
-.PHONY: help setup scrape scrape-refresh scrape-help test lint format-check format smoke clean-data
+.PHONY: help setup scrape scrape-refresh scrape-help test lint format-check format smoke import-db clean-data
 
 help:
 	@printf '%s\n' \
@@ -17,6 +17,7 @@ help:
 		'  make format-check    Check Python formatting' \
 		'  make format          Format Python code with Ruff' \
 		'  make smoke           Check six live scraper pages without writing data' \
+		'  make import-db       Build the SQLite database and load the CSV files' \
 		'  make clean-data      Clean the database tables into CSV files' \
 		'' \
 		'Variables:' \
@@ -56,6 +57,9 @@ format:
 smoke: CONFIG = config/smoke.json
 smoke:
 	"$(UV)" run --locked python code/smoke.py --config "$(CONFIG)" $(ARGS)
+
+import-db:
+	"$(UV)" run --with pandas --with sqlalchemy python code/scripts/database/import_data.py
 
 clean-data:
 	"$(UV)" run --with pandas python code/scripts/cleaning/cleaning_data.py
