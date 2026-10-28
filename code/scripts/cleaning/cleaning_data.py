@@ -19,7 +19,7 @@ def clean_common(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_players(df: pd.DataFrame) -> pd.DataFrame:
-    df["birth_date"] = pd.to_datetime(df["birth_date"], format="%m/%d/%Y").dt.strftime(
+    df["birth_date"] = pd.to_datetime(df["birth_date"], format="mixed").dt.strftime(
         "%Y-%m-%d"
     )
     df["height_cm"] = df["height_cm"].round(1)
@@ -28,7 +28,7 @@ def clean_players(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # Table-specific cleaners (tables not listed here only get the common cleaning)
-SPECIFIC = {"Players": clean_players}
+SPECIFIC = {"players": clean_players}
 
 
 def main() -> None:

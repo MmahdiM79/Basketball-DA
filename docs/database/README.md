@@ -6,7 +6,8 @@ The SQLite database `DB/basketbal_da.db` is built from the project CSV files. Th
 ## Files
 - `code/scripts/database/database_models.py`: table definitions. Running or importing it creates the database file and the tables.
 - `code/scripts/database/import_data.py`: the `DataImporter` class, which reads the CSV files and fills the tables.
-- `data/database/`: the eight input CSV files.
+- `data/database/`: the eight input CSV files. This lowercase path is the canonical directory; the older `data/DataBase/` export directory has been consolidated here.
+- ` notebooks/DataBase.ipynb`: reads the scraper exports from `data/processed/` and regenerates all eight files in `data/database/`. Paths are resolved from the project or notebook directory.
 
 ## Tables
 
@@ -29,7 +30,7 @@ The SQLite database `DB/basketbal_da.db` is built from the project CSV files. Th
 - Columns marked NOT NULL in the project diagram are declared with `nullable=False`: the four foreign keys of `player_season`, the two foreign keys of `mvp_votes`, the three foreign keys of `experience`, and `seasons.season`.
 
 ## What the import does
-- Loads the CSV values as they are. The files are already cleaned, so the import does not clean or convert anything.
+- Loads the generated CSV values as they are. The import does not clean or convert anything; `make clean-data` prepares the analysis exports afterward.
 - Loads parent tables first (`seasons`, `positions`, `team`, `players`), then the child tables, because of the foreign keys.
 - Stores empty cells as NULL. Percentage columns such as `three_point_pct` are empty when a player had no attempts.
 
