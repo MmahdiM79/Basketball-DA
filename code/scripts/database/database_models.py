@@ -21,7 +21,7 @@ Base = declarative_base()
 
 
 class Players(Base):
-    __tablename__ = "Players"
+    __tablename__ = "players"
 
     # Columns
     player_id = Column(String, primary_key=True)
@@ -38,7 +38,7 @@ class Players(Base):
 
 
 class Team(Base):
-    __tablename__ = "Team"
+    __tablename__ = "team"
 
     # Columns
     team_id = Column(Integer, primary_key=True)
@@ -51,7 +51,7 @@ class Team(Base):
 
 
 class Position(Base):
-    __tablename__ = "position"
+    __tablename__ = "positions"
 
     # Columns
     position_id = Column(Integer, primary_key=True)
@@ -62,7 +62,7 @@ class Position(Base):
 
 
 class Season(Base):
-    __tablename__ = "season"
+    __tablename__ = "seasons"
 
     # Columns
     season_id = Column(Integer, primary_key=True)
@@ -76,15 +76,15 @@ class Season(Base):
 
 
 class Player_of_season(Base):
-    __tablename__ = "player_of_season"
+    __tablename__ = "player_season"
 
     # Columns
     player_season_id = Column(Integer, primary_key=True)
 
-    season_id = Column(Integer, ForeignKey("season.season_id"), nullable=False)
-    player_id = Column(String, ForeignKey("Players.player_id"), nullable=False)
-    team_id = Column(Integer, ForeignKey("Team.team_id"), nullable=False)
-    position_id = Column(Integer, ForeignKey("position.position_id"), nullable=False)
+    season_id = Column(Integer, ForeignKey("seasons.season_id"), nullable=False)
+    player_id = Column(String, ForeignKey("players.player_id"), nullable=False)
+    team_id = Column(Integer, ForeignKey("team.team_id"), nullable=False)
+    position_id = Column(Integer, ForeignKey("positions.position_id"), nullable=False)
     is_total = Column(Boolean)
     age = Column(Integer)
     games = Column(Integer)
@@ -131,8 +131,8 @@ class Champions(Base):
     __tablename__ = "champions"
 
     # Columns
-    season_id = Column(Integer, ForeignKey("season.season_id"), primary_key=True)
-    team_id = Column(Integer, ForeignKey("Team.team_id"), primary_key=True)
+    season_id = Column(Integer, ForeignKey("seasons.season_id"), primary_key=True)
+    team_id = Column(Integer, ForeignKey("team.team_id"), primary_key=True)
 
     # Relationships
     season = relationship("Season", back_populates="champions")
@@ -144,8 +144,8 @@ class Mvp_Votes(Base):
 
     # Columns
     mvp_id = Column(Integer, primary_key=True)
-    season_id = Column(Integer, ForeignKey(Season.season_id), nullable=False)
-    player_id = Column(String, ForeignKey(Players.player_id), nullable=False)
+    season_id = Column(Integer, ForeignKey("seasons.season_id"), nullable=False)
+    player_id = Column(String, ForeignKey("players.player_id"), nullable=False)
     rank = Column(Integer)
     first_place_votes = Column(Integer)
     points_won = Column(Integer)
@@ -162,9 +162,9 @@ class Experience(Base):
 
     # Columns
     experience_id = Column(Integer, primary_key=True)
-    team_id = Column(Integer, ForeignKey(Team.team_id), nullable=False)
-    player_id = Column(String, ForeignKey("Players.player_id"), nullable=False)
-    season_id = Column(Integer, ForeignKey("season.season_id"), nullable=False)
+    team_id = Column(Integer, ForeignKey("team.team_id"), nullable=False)
+    player_id = Column(String, ForeignKey("players.player_id"), nullable=False)
+    season_id = Column(Integer, ForeignKey("seasons.season_id"), nullable=False)
     experience_years = Column(Integer)
 
     # Relationships
