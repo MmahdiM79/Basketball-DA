@@ -59,7 +59,7 @@ smoke:
 	"$(UV)" run --locked python code/smoke.py --config "$(CONFIG)" $(ARGS)
 
 import-db:
-	"$(UV)" run --with pandas --with sqlalchemy python code/scripts/database/import_data.py
+	"$(UV)" run --locked python code/scripts/database/import_data.py
 
 clean-data:
-	"$(UV)" run --with pandas python code/scripts/cleaning/cleaning_data.py
+	"$(UV)" run --locked python code/scripts/cleaning/cleaning_data.py

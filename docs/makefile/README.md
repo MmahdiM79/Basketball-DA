@@ -67,4 +67,4 @@ make smoke CONFIG="config/custom smoke.json"
 make import-db
 ```
 
-`make import-db` creates `DB/basketbal_da.db` and fills it from the CSV files in `data/database/`. Like `make clean-data`, it installs pandas and SQLAlchemy for this run only with `uv run --with`, so the project dependencies and the lockfile stay unchanged. The import appends rows: delete the existing database file first, or it fails with `UNIQUE constraint failed`. See the [database guide](../database/README.md) for the tables and relationships.
+`make import-db` creates `DB/basketbal_da.db` and fills it from the CSV files in `data/database/`. Both `make import-db` and `make clean-data` use `uv run --locked`, so pandas and SQLAlchemy come from the project dependencies and the versions recorded in `uv.lock`. The import appends rows: delete the existing database file first, or it fails with `UNIQUE constraint failed`. See the [database guide](../database/README.md) for the tables and relationships.
