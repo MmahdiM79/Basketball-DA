@@ -40,7 +40,7 @@ From the project root:
 make import-db
 ```
 
-This runs `uv run --with pandas --with sqlalchemy python code/scripts/database/import_data.py`. The `--with` options install the packages for this run only, so the project dependencies stay unchanged. Without `make`, run `python code/scripts/database/import_data.py` directly.
+This runs `uv run --locked python code/scripts/database/import_data.py` using the pandas and SQLAlchemy versions recorded in `uv.lock`. Without `make`, run the same command directly.
 
 The import appends rows. Delete `DB/basketbal_da.db` before running it again, otherwise it fails with `UNIQUE constraint failed`.
 

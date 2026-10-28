@@ -33,7 +33,7 @@ From the project root:
 make clean-data
 ```
 
-This runs `uv run --with pandas python code/scripts/cleaning/cleaning_data.py`. The `--with pandas` option installs pandas for this run only, so the project dependencies stay unchanged.
+This runs `uv run --locked python code/scripts/cleaning/cleaning_data.py` using the pandas version recorded in `uv.lock`.
 
 ## Output
 One file per table, saved in `data/cleaned/`, named `<table>_clean.csv`.
